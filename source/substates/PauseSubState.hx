@@ -21,6 +21,7 @@ class PauseSubState extends MusicBeatSubstate
 
 	var pauseMusic:FlxSound;
 	var practiceText:FlxText;
+	var infiniteModeText:FlxText;
 	var skipTimeText:FlxText;
 	var skipTimeTracker:Alphabet;
 	var curTime:Float = Math.max(0, Conductor.songPosition);
@@ -99,6 +100,14 @@ class PauseSubState extends MusicBeatSubstate
 		practiceText.updateHitbox();
 		practiceText.visible = PlayState.instance.practiceMode;
 		add(practiceText);
+infiniteModeText = new FlxText(20, 15 + 138, 0, Language.getPhrase("infinite_mode", "Infinite Mode: ON").toUpperCase(), 32);
+infiniteModeText.scrollFactor.set();
+infiniteModeText.setFormat(Paths.font('vcr.ttf'), 32);
+infiniteModeText.x = FlxG.width - (infiniteModeText.width + 20);
+infiniteModeText.updateHitbox();
+infiniteModeText.visible = ClientPrefs.getGameplaySetting('infinitemode') == true;
+add(infiniteModeText);
+
 
 		var chartingText:FlxText = new FlxText(20, 15 + 101, 0, Language.getPhrase("Charting Mode").toUpperCase(), 32);
 		chartingText.scrollFactor.set();
