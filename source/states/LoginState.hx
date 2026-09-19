@@ -1,19 +1,30 @@
 package states;
 
-import flixel.text.FlxInputText;
+import openfl.text.TextField;
+import openfl.text.TextFieldType;
+import openfl.text.TextFormat;
 import haxe.Http;
 import haxe.Json;
 import backend.UserSession;
+import sys.thread.Thread;
+import flixel.FlxObject;
 
 class LoginState extends MusicBeatState
 {
 static var SERVER_URL:String = "https://psych-nm.onrender.com";
 
-var usernameInput:FlxInputText;
-var passwordInput:FlxInputText;
+var usernameInput:TextField;
+var passwordInput:TextField;
 var statusText:FlxText;
 var isRegisterMode:Bool = false;
 var isLoading:Bool = false;
+var hasPendingResult:Bool = false;
+var pendingResultOk:Bool = false;
+var pendingResultText:String = null;
+var pendingResultErr:String = null;
+	var logoutMode:Bool = false;
+	var logoutYesText:FlxText;
+	var logoutNoText:FlxText;
 
 var loginButton:FlxText;
 var loginBtnBg:FlxSprite;
@@ -48,20 +59,38 @@ var userLabel:FlxText = new FlxText(cardX + 50, cardY + 140, 500, "KULLANICI ADI
 userLabel.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT);
 add(userLabel);
 
-usernameInput = new FlxInputText(Std.int(cardX + 50), Std.int(cardY + 165), 500, "", 20);
-usernameInput.fieldBorderColor = FlxColor.WHITE;
-usernameInput.backgroundColor = FlxColor.fromRGB(50, 40, 65);
-add(usernameInput);
+usernameInput = new TextField();
+usernameInput.type = TextFieldType.INPUT;
+		usernameInput.x = ((openfl.Lib.current.stage.stageWidth - 1280 * (openfl.Lib.current.stage.stageHeight / 720)) / 2) + (cardX + 50) * (openfl.Lib.current.stage.stageHeight / 720);
+		usernameInput.scaleX = (openfl.Lib.current.stage.stageHeight / 720);
+		usernameInput.scaleY = (openfl.Lib.current.stage.stageHeight / 720);
+		usernameInput.y = 0.0 + (cardY + 165) * (openfl.Lib.current.stage.stageHeight / 720);
+usernameInput.width = 500;
+usernameInput.height = 40;
+usernameInput.background = true;
+usernameInput.backgroundColor = 0x323041;
+usernameInput.textColor = 0xFFFFFF;
+usernameInput.defaultTextFormat = new TextFormat(null, 20, 0xFFFFFF);
+FlxG.stage.addChild(usernameInput);
 
 var passLabel:FlxText = new FlxText(cardX + 50, cardY + 220, 500, "SIFRE", 16);
 passLabel.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT);
 add(passLabel);
 
-passwordInput = new FlxInputText(Std.int(cardX + 50), Std.int(cardY + 245), 500, "", 20);
-passwordInput.fieldBorderColor = FlxColor.WHITE;
-passwordInput.backgroundColor = FlxColor.fromRGB(50, 40, 65);
-passwordInput.passwordMode = true;
-add(passwordInput);
+passwordInput = new TextField();
+passwordInput.type = TextFieldType.INPUT;
+passwordInput.displayAsPassword = true;
+		passwordInput.x = ((openfl.Lib.current.stage.stageWidth - 1280 * (openfl.Lib.current.stage.stageHeight / 720)) / 2) + (cardX + 50) * (openfl.Lib.current.stage.stageHeight / 720);
+		passwordInput.scaleX = (openfl.Lib.current.stage.stageHeight / 720);
+		passwordInput.scaleY = (openfl.Lib.current.stage.stageHeight / 720);
+		passwordInput.y = 0.0 + (cardY + 245) * (openfl.Lib.current.stage.stageHeight / 720);
+passwordInput.width = 500;
+passwordInput.height = 40;
+passwordInput.background = true;
+passwordInput.backgroundColor = 0x323041;
+passwordInput.textColor = 0xFFFFFF;
+passwordInput.defaultTextFormat = new TextFormat(null, 20, 0xFFFFFF);
+FlxG.stage.addChild(passwordInput);
 
 loginBtnBg = new FlxSprite(cardX + 50, cardY + 310).makeGraphic(500, 60, FlxColor.fromRGB(120, 80, 200));
 add(loginBtnBg);
@@ -82,7 +111,13 @@ skipText = new FlxText(cardX, cardY + 490, cardW, "Atla", 20);
 skipText.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.GRAY, CENTER);
 add(skipText);
 
-addTouchPad("NONE", "NONE");
+}
+
+override function destroy()
+{
+if(usernameInput != null && usernameInput.parent != null) usernameInput.parent.removeChild(usernameInput);
+if(passwordInput != null && passwordInput.parent != null) passwordInput.parent.removeChild(passwordInput);
+super.destroy();
 }
 
 function isTouched(obj:FlxObject):Bool
@@ -98,6 +133,13 @@ return false;
 override function update(elapsed:Float)
 {
 super.update(elapsed);
+
+if(hasPendingResult)
+{
+hasPendingResult = false;
+isLoading = false;
+handleResult(pendingResultOk, pendingResultText, pendingResultErr);
+}
 
 if(isLoading) return;
 
@@ -120,29 +162,20 @@ MusicBeatState.switchState(new MainMenuState());
 }
 }
 
-function doSubmit()
+function handleResult(ok:Bool, data:String, err:String)
 {
-var username:String = usernameInput.text.trim();
-var password:String = passwordInput.text.trim();
-
-if(username.length < 1 || password.length < 1)
+if(err != null)
 {
-statusText.text = "Kullanici adi ve sifre gerekli!";
+statusText.color = FlxColor.RED;
+if(err == "AUTH_FAIL")
+statusText.text = isRegisterMode ? "Kayit basarisiz" : "Kullanici Adi Veya Sifre Yanlis";
+else if(err == "USER_EXISTS")
+statusText.text = "Bu kullanici adi zaten alinmis";
+else
+statusText.text = "Baglanti hatasi: " + err;
 return;
 }
 
-isLoading = true;
-statusText.color = FlxColor.WHITE;
-statusText.text = "Yukleniyor...";
-
-var endpoint:String = isRegisterMode ? "/register" : "/login";
-var http:Http = new Http(SERVER_URL + endpoint);
-http.setHeader("Content-Type", "application/json");
-http.setPostData(Json.stringify({username: username, password: password}));
-
-http.onData = function(data:String)
-{
-isLoading = false;
 try
 {
 var res:Dynamic = Json.parse(data);
@@ -167,13 +200,65 @@ statusText.text = "Sunucu hatasi";
 }
 }
 
-http.onError = function(error:String)
+function doSubmit()
 {
-isLoading = false;
-statusText.color = FlxColor.RED;
-statusText.text = "Baglanti hatasi: " + error;
+var username:String = usernameInput.text.trim();
+var password:String = passwordInput.text.trim();
+
+if(username.length < 1 || password.length < 1)
+{
+statusText.text = "Kullanici adi ve sifre gerekli!";
+return;
 }
 
-http.request(true);
+isLoading = true;
+statusText.color = FlxColor.WHITE;
+statusText.text = "Yukleniyor...";
+
+var endpoint:String = isRegisterMode ? "/register" : "/login";
+Thread.create(function()
+{
+var http:Http = new Http(SERVER_URL + endpoint);
+http.setHeader("Content-Type", "application/json");
+http.setPostData(Json.stringify({username: username, password: password}));
+
+var resultText:String = null;
+var resultOk:Bool = false;
+var resultErr:String = null;
+
+var statusCode:Int = 0;
+http.onStatus = function(status:Int)
+{
+statusCode = status;
+}
+http.onData = function(data:String)
+{
+resultOk = true;
+resultText = data;
+}
+http.onError = function(error:String)
+{
+if(statusCode == 401 || statusCode == 404)
+resultErr = "AUTH_FAIL";
+else if(statusCode == 409)
+resultErr = "USER_EXISTS";
+else
+resultErr = error;
+}
+
+try
+{
+http.request(false);
+}
+catch(e:Dynamic)
+{
+resultErr = Std.string(e);
+}
+
+pendingResultOk = resultOk;
+pendingResultText = resultText;
+pendingResultErr = resultErr;
+hasPendingResult = true;
+});
 }
 }

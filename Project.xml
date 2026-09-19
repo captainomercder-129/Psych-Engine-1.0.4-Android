@@ -111,8 +111,13 @@
 
 	<!-- _______________________________ Libraries ______________________________ -->
 
+	<config:android permission="android.permission.INTERNET" />
+	<config:android permission="android.permission.WRITE_EXTERNAL_STORAGE" />
+	<config:android permission="android.permission.READ_EXTERNAL_STORAGE" />
+	<config:android permission="android.permission.MANAGE_EXTERNAL_STORAGE" />
 	<haxelib name="flixel"/>
 	<haxelib name="flixel-addons" version="3.3.2"/>
+<haxelib name="flixel-ui"/>
 	<haxelib name="tjson" version="1.4.0"/>
 
 	<!--Psych stuff needed-->

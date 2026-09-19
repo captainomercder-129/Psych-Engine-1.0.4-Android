@@ -41,7 +41,7 @@ var loginIndicator:FlxText;
 function updateLoginIndicatorText()
 {
 loginIndicator.text = backend.UserSession.isLoggedIn
-? "Giris Yapildi\n" + backend.UserSession.username
+? backend.UserSession.username + "\nPuanlar: " + backend.UserSession.points
 : "Giris Yapilmadi\nHesabina giris yap";
 loginIndicator.x = FlxG.width - loginIndicator.width - 15;
 }
