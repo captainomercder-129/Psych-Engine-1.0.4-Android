@@ -36,6 +36,29 @@ class MainMenuState extends MusicBeatState
 
 	var magenta:FlxSprite;
 	var camFollow:FlxObject;
+var loginIndicator:FlxText;
+
+function updateLoginIndicatorText()
+{
+loginIndicator.text = backend.UserSession.isLoggedIn
+? "Giris Yapildi\n" + backend.UserSession.username
+: "Giris Yapilmadi\nHesabina giris yap";
+loginIndicator.x = FlxG.width - loginIndicator.width - 15;
+}
+
+function checkLoginIndicatorTouch():Bool
+{
+if(loginIndicator == null) return false;
+
+if(FlxG.mouse.justPressed && FlxG.mouse.overlaps(loginIndicator))
+return true;
+
+for (touch in FlxG.touches.list)
+if(touch.justPressed && touch.overlaps(loginIndicator))
+return true;
+
+return false;
+}
 
 	static var showOutdatedWarning:Bool = true;
 	override function create()
@@ -125,7 +148,14 @@ class MainMenuState extends MusicBeatState
 
 		FlxG.camera.follow(camFollow, null, 0.15);
 
-		addTouchPad('NONE', 'E');
+		loginIndicator = new FlxText(0, 15, 300, '', 20);
+loginIndicator.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+loginIndicator.scrollFactor.set();
+loginIndicator.x = FlxG.width - loginIndicator.width - 15;
+updateLoginIndicatorText();
+add(loginIndicator);
+
+addTouchPad('NONE', 'E');
 	}
 
 	function createMenuItem(name:String, x:Float, y:Float):FlxSprite
@@ -153,6 +183,14 @@ class MainMenuState extends MusicBeatState
 
 		if (!selectedSomethin)
 		{
+			if(checkLoginIndicatorTouch())
+			{
+				selectedSomethin = true;
+				FlxG.sound.play(Paths.sound('confirmMenu'));
+				MusicBeatState.switchState(new states.LoginState());
+				return;
+			}
+
 			if (controls.UI_UP_P)
 				changeItem(-1);
 
