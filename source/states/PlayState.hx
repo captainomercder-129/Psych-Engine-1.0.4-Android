@@ -2421,6 +2421,28 @@ PauseSubState.restartSong(true);
 return;
 }
 
+		if(backend.UserSession.isLoggedIn)
+		{
+			var earnedPoints:Int = Std.int(songHits / 50);
+			if(earnedPoints > 0)
+			{
+				var uid:Int = backend.UserSession.userId;
+				backend.UserSession.points += earnedPoints;
+
+				sys.thread.Thread.create(function()
+				{
+					try
+					{
+						var http = new haxe.Http("https://psych-nm.onrender.com/score");
+						http.setHeader("Content-Type", "application/json");
+						http.setPostData(haxe.Json.stringify({user_id: uid, score: earnedPoints, song_name: PlayState.SONG.song}));
+						http.request(false);
+					}
+					catch(e:Dynamic) {}
+				});
+			}
+		}
+
 		updateTime = false;
 		FlxG.sound.music.volume = 0;
 

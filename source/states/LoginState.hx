@@ -30,6 +30,10 @@ var loginButton:FlxText;
 var loginBtnBg:FlxSprite;
 var switchModeText:FlxText;
 var skipText:FlxText;
+var titleText:FlxText;
+var subText:FlxText;
+var userLabel:FlxText;
+var passLabel:FlxText;
 
 override function create()
 {
@@ -47,15 +51,15 @@ var cardY:Float = (FlxG.height - cardH) / 2;
 var card:FlxSprite = new FlxSprite(cardX, cardY).makeGraphic(cardW, cardH, FlxColor.fromRGB(30, 20, 45));
 add(card);
 
-var titleText:FlxText = new FlxText(cardX, cardY + 30, cardW, "GIRIS YAPIN", 40);
+titleText = new FlxText(cardX, cardY + 30, cardW, "GIRIS YAPIN", 40);
 titleText.setFormat(Paths.font("vcr.ttf"), 40, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 add(titleText);
 
-var subText:FlxText = new FlxText(cardX, cardY + 85, cardW, "Hesabina baglan", 20);
+subText = new FlxText(cardX, cardY + 85, cardW, "Hesabina baglan", 20);
 subText.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.GRAY, CENTER);
 add(subText);
 
-var userLabel:FlxText = new FlxText(cardX + 50, cardY + 140, 500, "KULLANICI ADI", 16);
+userLabel = new FlxText(cardX + 50, cardY + 140, 500, "KULLANICI ADI", 16);
 userLabel.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT);
 add(userLabel);
 
@@ -73,9 +77,10 @@ usernameInput.textColor = 0xFFFFFF;
 usernameInput.defaultTextFormat = new TextFormat(null, 20, 0xFFFFFF);
 FlxG.stage.addChild(usernameInput);
 
-var passLabel:FlxText = new FlxText(cardX + 50, cardY + 220, 500, "SIFRE", 16);
+passLabel = new FlxText(cardX + 50, cardY + 220, 500, "SIFRE", 16);
 passLabel.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT);
 add(passLabel);
+
 
 passwordInput = new TextField();
 passwordInput.type = TextFieldType.INPUT;
@@ -111,6 +116,25 @@ skipText = new FlxText(cardX, cardY + 490, cardW, "Atla", 20);
 skipText.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.GRAY, CENTER);
 add(skipText);
 
+if(backend.UserSession.isLoggedIn)
+{
+logoutMode = true;
+titleText.text = "HESABIN";
+subText.text = backend.UserSession.username;
+usernameInput.visible = false;
+passwordInput.visible = false;
+userLabel.visible = false;
+passLabel.visible = false;
+loginBtnBg.visible = false;
+loginButton.visible = false;
+switchModeText.visible = false;
+skipText.text = "Geri Don";
+
+logoutYesText = new FlxText(cardX, cardY + 320, cardW, "Cikis Yap", 26);
+logoutYesText.setFormat(Paths.font("vcr.ttf"), 26, FlxColor.RED, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+add(logoutYesText);
+}
+
 }
 
 override function destroy()
@@ -142,6 +166,22 @@ handleResult(pendingResultOk, pendingResultText, pendingResultErr);
 }
 
 if(isLoading) return;
+
+if(logoutMode)
+{
+if(isTouched(logoutYesText))
+{
+backend.UserSession.logout();
+FlxG.sound.play(Paths.sound("cancelMenu"));
+MusicBeatState.switchState(new LoginState());
+}
+else if(isTouched(skipText) || controls.BACK)
+{
+FlxG.sound.play(Paths.sound("cancelMenu"));
+MusicBeatState.switchState(new MainMenuState());
+}
+return;
+}
 
 if(isTouched(loginBtnBg) || isTouched(loginButton))
 {
