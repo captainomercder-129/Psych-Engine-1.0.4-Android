@@ -82,6 +82,23 @@ passLabel.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT);
 add(passLabel);
 
 
+loginButton = new FlxText(cardX + 50, cardY + 328, 500, "GIRIS YAP", 28);
+loginButton.setFormat(Paths.font("vcr.ttf"), 28, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+add(loginButton);
+
+statusText = new FlxText(cardX, cardY + 390, cardW, "", 18);
+statusText.setFormat(Paths.font("vcr.ttf"), 18, FlxColor.RED, CENTER);
+add(statusText);
+
+switchModeText = new FlxText(cardX, cardY + 440, cardW, "Hesabin yok mu? Kayit ol", 20);
+switchModeText.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.fromRGB(180, 130, 255), CENTER);
+add(switchModeText);
+
+skipText = new FlxText(cardX, cardY + 490, cardW, "Atla", 20);
+skipText.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.GRAY, CENTER);
+add(skipText);
+
+
 passwordInput = new TextField();
 passwordInput.type = TextFieldType.INPUT;
 passwordInput.displayAsPassword = true;
@@ -99,22 +116,6 @@ FlxG.stage.addChild(passwordInput);
 
 loginBtnBg = new FlxSprite(cardX + 50, cardY + 310).makeGraphic(500, 60, FlxColor.fromRGB(120, 80, 200));
 add(loginBtnBg);
-
-loginButton = new FlxText(cardX + 50, cardY + 328, 500, "GIRIS YAP", 28);
-loginButton.setFormat(Paths.font("vcr.ttf"), 28, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-add(loginButton);
-
-statusText = new FlxText(cardX, cardY + 390, cardW, "", 18);
-statusText.setFormat(Paths.font("vcr.ttf"), 18, FlxColor.RED, CENTER);
-add(statusText);
-
-switchModeText = new FlxText(cardX, cardY + 440, cardW, "Hesabin yok mu? Kayit ol", 20);
-switchModeText.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.fromRGB(180, 130, 255), CENTER);
-add(switchModeText);
-
-skipText = new FlxText(cardX, cardY + 490, cardW, "Atla", 20);
-skipText.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.GRAY, CENTER);
-add(skipText);
 
 if(backend.UserSession.isLoggedIn)
 {
