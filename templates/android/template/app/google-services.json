@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "412565208681",
+    "project_id": "older-test-53714",
+    "storage_bucket": "older-test-53714.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:412565208681:android:ff1e3d6f3ba45872022cf8",
+        "android_client_info": {
+          "package_name": "com.mio.engine"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7xDGxv31CCeEQh0wfp5nFoYmS8VuKy9Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
